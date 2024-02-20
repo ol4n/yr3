@@ -2,11 +2,6 @@ import pygame
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
 clock = pygame.time.Clock()
 FPS = 60
 
@@ -22,13 +17,13 @@ class Character(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):
         pygame.sprite.Sprite.__init__(self)
         self.speed = speed
-        img = pygame.load()
-        self.image = pygame.transform.scale()
+        self.image = pygame.image.load('Sunny-land-files/Graphical Assets/sprites/player/idle/player-idle-1.png')
+        self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.y_gravity = 1
         self.jump_height = 20
-        self.y_speed = self.jump_height
+        self.y_speed = 0
 
     def movement(self, move_left, move_right, jump):
         change_x = 0
@@ -37,28 +32,33 @@ class Character(pygame.sprite.Sprite):
         if move_left:
             change_x = -self.speed
         if move_right:
-            change_y = self.speed
-        # if jump:
+            change_x = self.speed
+        if jump and self.rect.bottom >= SCREEN_HEIGHT-100:
+            self.y_speed = -self.jump_height
 
+        self.y_speed += self.y_gravity
+        change_y += self.y_speed
 
         self.rect.x += change_x
         self.rect.y += change_y
 
-    def draw(self):
+    def draw(self, screen):
         screen.blit(self.image, self.rect)
 
-run = True
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+player = Character(400, SCREEN_HEIGHT-100, 2, 1)
+
+run = True
 while run:
     clock.tick(FPS)
 
-    screen.fill((0, 0, 0))
+    screen.fill((255, 255, 255))
+    # player.draw()
 
-    player = Character(400, 0, 2, 1)
-
-    player.draw()
-
-    player.movement(move_left, move_right)
+    player.movement(move_left, move_right, jump)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -72,11 +72,14 @@ while run:
                 jump = True
 
         if event.type == pygame.KEYUP:
-            if event.key == pygame.K_a:
+            if event.key == pygame.K_LEFT:
                 move_left = False
-            if event.key == pygame.K_d:
+            if event.key == pygame.K_RIGHT:
                 move_right = False
 
+    jump = False
+
+    player.draw(screen)
     pygame.display.update()
 
 pygame.quit()
